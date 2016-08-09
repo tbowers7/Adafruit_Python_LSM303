@@ -12,6 +12,8 @@ import Adafruit_LSM303
 # Create a LSM303 instance.
 lsm303 = Adafruit_LSM303.LSM303()
 
+lsm303.set_mag_gain(Adafruit_LSM303.LSM303_MAGGAIN_1_3)
+
 # Alternatively you can specify the I2C bus with a bus parameter:
 #lsm303 = Adafruit_LSM303.LSM303(busum=2)
 

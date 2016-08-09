@@ -85,7 +85,7 @@ class LSM303(object):
         mag = struct.unpack('>hhh', mag_raw)
         return (accel, mag)
 
-    def set_mag_gain(gain=LSM303_MAGGAIN_1_3):
+    def set_mag_gain(self,gain=LSM303_MAGGAIN_1_3):
         """Set the magnetometer gain.  Gain should be one of the following
         constants:
          - LSM303_MAGGAIN_1_3 = +/- 1.3 (default)
