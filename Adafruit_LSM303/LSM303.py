@@ -97,3 +97,88 @@ class LSM303(object):
          - LSM303_MAGGAIN_8_1 = +/- 8.1
         """
         self._mag.write8(LSM303_REGISTER_MAG_CRB_REG_M, gain)
+
+
+    # ===================================================================
+    # Compute the roll / pitch / heading from the acceleration and mag
+    # data.
+    #
+    # Code translated from the Adafruit 9DOF Arduino library found at:
+    # https://github.com/adafruit/Adafruit_9DOF/blob/master/Adafruit_9DOF.cpp
+    #
+    #************************************************************************
+    #  This is a library for the Adafruit 9DOF Breakout
+    #  Designed specifically to work with the Adafruit 9DOF Breakout:
+    #  http://www.adafruit.com/products/1714
+    #  This class does not communicate directly with the hardware, but
+    #  converts raw readings (X-Y-Z magnitudes) into more useful values in
+    #  degrees (roll, pitch, heading).
+    #  Adafruit invests time and resources providing this open source code,
+    #  please support Adafruit and open-source hardware by purchasing products
+    #  from Adafruit!
+    #  Written by Kevin Townsend for Adafruit Industries.
+    #  BSD license, all text above must be included in any redistribution
+    #************************************************************************
+    #
+    # The starting position is set by placing the object flat and
+    # pointing northwards (Z-axis pointing upward and X-axis pointing
+    # northwards).
+    #
+    # The orientation of the object can be modeled as resulting from
+    # 3 consecutive rotations in turn: heading (Z-axis), pitch (Y-axis),
+    # and roll (X-axis) applied to the starting position.
+    
+    def get_orientation(self, accel, mag):
+        import numpy as np
+        
+        # Unpack the accel and mag tuples
+        accel_x, accel_y, accel_z = accel
+        mag_x, mag_z, mag_y = mag
+        
+        # roll: Rotation around the X-axis. -180 <= roll <= 180
+        # a positive roll angle is defined to be a clockwise rotation about the
+        # positive X-axis
+        #
+        #                y
+        #  roll = atan2(---)
+        #                z
+        #
+        # where:  y, z are returned value from accelerometer sensor
+        roll = np.arctan2(accel_y, accel_z)
+        
+        # pitch: Rotation around the Y-axis. -180 <= roll <= 180
+        # a positive pitch angle is defined to be a clockwise rotation about
+        # the positive Y-axis
+        #
+        #                                 -x
+        #      pitch = atan(-------------------------------)
+        #                    y * sin(roll) + z * cos(roll)
+        #
+        # where:  x, y, z are returned value from accelerometer sensor
+        if (accel_y * np.sin(roll) + accel_z * np.cos(roll) == 0):
+            pitch = (np.pi / 2.) if accel_x > 0 else (-np.pi / 2.)
+        else:
+            pitch = np.arctan(accel_x / (accel_y * np.sin(roll) +
+                                       accel_z * np.cos(roll) ) )
+
+        # heading: Rotation around the Z-axis. -180 <= roll <= 180
+        # a positive heading angle is defined to be a clockwise rotation about
+        # the positive Z-axis
+        #
+        #                                       z * sin(roll) - y * cos(roll)
+        #   heading = atan2(--------------------------------------------------------------------------)
+        #                    x * cos(pitch) + y * sin(pitch) * sin(roll) + z * sin(pitch) * cos(roll))
+        #
+        # where:  x, y, z are returned value from magnetometer sensor
+        heading = np.arctan2( mag_z * np.sin(roll) - mag_y * np.cos(roll),
+                              mag_x * np.cos(pitch) +
+                              mag_y * np.sin(pitch) * np.sin(roll) +
+                              mag_z * np.sin(pitch) * np.cos(roll) )
+
+        # Convert angular data to degrees
+        roll    = roll    * 180. / np.pi
+        pitch   = pitch   * 180. / np.pi
+        heading = heading * 180. / np.pi
+
+        # Return
+        return (roll, pitch, heading)
