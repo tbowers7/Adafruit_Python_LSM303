@@ -180,10 +180,14 @@ class LSM303(object):
         pitch   = pitch   * 180. / np.pi
         heading = heading * 180. / np.pi
 
+        # Define HEADING between 0 and 360
+        if (heading < 0):
+            heading += 360
+        
         # Return
         return (roll, pitch, heading)
     
-
+    
     #==========================================================#
     # Python port of GSL's hypot3 function ([gsl]/sys/hypot.c) #
     # This function computes the value of √( x ² + y ² + z ²)  #
