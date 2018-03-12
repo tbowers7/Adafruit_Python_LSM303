@@ -133,7 +133,7 @@ class LSM303(object):
         
         # Unpack the accel and mag tuples
         accel_x, accel_y, accel_z = accel
-        mag_x, mag_z, mag_y = mag
+        mag_x, mag_y, mag_z = mag
         
         # roll: Rotation around the X-axis. -180 <= roll <= 180
         # a positive roll angle is defined to be a clockwise rotation about the
