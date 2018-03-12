@@ -182,3 +182,28 @@ class LSM303(object):
 
         # Return
         return (roll, pitch, heading)
+    
+
+    #==========================================================#
+    # Python port of GSL's hypot3 function ([gsl]/sys/hypot.c) #
+    # This function computes the value of √( x ² + y ² + z ²)  #
+    # in a way that avoids overflow.                           #
+    #==========================================================#
+    def hypot3(self, x, y, z):
+        import numpy as np
+
+        # Take the absolute values of each input, find maximum
+        xabs = np.fabs(x)
+        yabs = np.fabs(y)
+        zabs = np.fabs(z)
+        w = np.amax([xabs,yabs,zabs])
+
+        if (w == 0.0):
+            return 0.0
+        else:
+            r = w * np.sqrt((xabs / w) * (xabs / w) +
+                            (yabs / w) * (yabs / w) +
+                            (zabs / w) * (zabs / w))
+            return r
+
+
